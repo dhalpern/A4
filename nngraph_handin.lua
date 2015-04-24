@@ -1,0 +1,13 @@
+x1 = nn.Identity()()
+x2 = nn.Identity()()
+x3 = nn.Linear(3, 2)()
+mult = nn.CMulTable()({x2, x3})
+add = nn.CAddTable()({x1, mult})
+g = nn.gModule({x1, x2, x3}, {add})
+
+t1 = torch.rand(2)
+t2 = torch.rand(2)
+t3 = torch.rand(3)
+g:updateOutput({t1, t2, t3})
+g:updateGradInput({t1, t2, t3}, torch.rand(2))
+graph.dot(g.fg, 'G', 'plot')
