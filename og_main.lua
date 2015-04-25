@@ -5,7 +5,6 @@
 ----  This source code is licensed under the Apache 2 license found in the
 ----  LICENSE file in the root directory of this source tree. 
 ----
---[[
 ok,cunn = pcall(require, 'fbcunn')
 if not ok then
     ok,cunn = pcall(require,'cunn')
@@ -21,9 +20,6 @@ else
     cudaComputeCapability = deviceParams.major + deviceParams.minor/10
     LookupTable = nn.LookupTable
 end
-]]--
-require('nn')
-LookupTable = nn.LookupTable
 require('nngraph')
 require('base')
 ptb = require('data')
@@ -59,8 +55,7 @@ local params = {batch_size=20,
                 max_grad_norm=5}
 
 function transfer_data(x)
-  return x
-  --return x:cuda()
+  return x:cuda()
 end
 
 --local state_train, state_valid, state_test
@@ -178,7 +173,7 @@ function bp(state)
     local tmp = model.rnns[i]:backward({x, y, s},
                                        {derr, model.ds})[3]
     g_replace_table(model.ds, tmp)
-    --cutorch.synchronize()
+    cutorch.synchronize()
   end
   state.pos = state.pos + params.seq_length
   model.norm_dw = paramdx:norm()
@@ -220,7 +215,7 @@ function run_test()
 end
 
 --function main()
---g_init_gpu(arg)
+g_init_gpu(arg)
 state_train = {data=transfer_data(ptb.traindataset(params.batch_size))}
 state_valid =  {data=transfer_data(ptb.validdataset(params.batch_size))}
 state_test =  {data=transfer_data(ptb.testdataset(params.batch_size))}
@@ -267,7 +262,7 @@ while epoch < params.max_max_epoch do
    end
  end
  if step % 33 == 0 then
-   --cutorch.synchronize()
+   cutorch.synchronize()
    collectgarbage()
  end
 end
