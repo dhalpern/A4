@@ -1,0 +1,61 @@
+\documentclass{article} % For LaTeX2e
+\usepackage{nips14submit_e,times}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{url}
+%\documentstyle[nips14submit_09,times,art10]{article} % For LaTeX 2.09
+
+
+\title{A4 homework submission \\ David Halpern \\ Deep Learning 2015, Spring}
+
+
+\author{
+David Halpern\\
+Department of Psychology\\
+New York University\\
+\texttt{david.halpern@nyu.edu} \\
+}
+
+\newcommand{\fix}{\marginpar{FIX}}
+\newcommand{\new}{\marginpar{NEW}}
+
+\nipsfinalcopy % camera-ready version
+
+\begin{document}
+
+
+\maketitle
+
+
+\section{Questions}
+
+\subsection{Q2}
+
+i = i\\
+$\text{prev\_c} = c_{t-1}^l$\\
+$\text{pre\_h} = h_{t-1}^l$
+
+\subsection{Q3}
+Returns an rolled? version of the core LSTM module with parameters initialized uniformly within an interval.
+
+\subsection{Q4}
+model.s is the trained of the sequence. model.ds is the gradients of the model for the backward pass. model.start_s is the final hidden states of the current minibatch and gets reset when the sequence ends
+
+\subsection{Q5}
+Clipped at params.max_grad_norm
+
+\subsection{Q6}
+Batch SGD
+
+\subsubsection*{References}
+
+\small{
+% [1] Dosovitskiy, A., Springenberg, J. T., Riedmiller, M., \& Brox, T. (2014). Discriminative unsupervised feature learning with convolutional neural networks. {\it Advances in Neural Information Processing Systems}, pp. 766-774.
+
+[1] Pennington, Jeffrey, Socher, Richard, \& Manning, Christopher D. (2014). Glove: Global vectors for word representation. Proceedings of the Empirical Methods in Natural Language Processing.
+
+[2] Xiang Zhang and (2015). Text Understanding from Scratch. CoRR, abs/1502.01710, .
+}
+
+
+\end{document}

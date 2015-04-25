@@ -5,6 +5,7 @@
 ----  This source code is licensed under the Apache 2 license found in the
 ----  LICENSE file in the root directory of this source tree. 
 ----
+--[[
 ok,cunn = pcall(require, 'fbcunn')
 if not ok then
     ok,cunn = pcall(require,'cunn')
@@ -20,6 +21,8 @@ else
     cudaComputeCapability = deviceParams.major + deviceParams.minor/10
     LookupTable = nn.LookupTable
 end
+]]--
+LookupTable = nn.LookupTable
 require('nngraph')
 require('base')
 ptb = require('data')
@@ -55,7 +58,8 @@ local params = {batch_size=20,
                 max_grad_norm=5}
 
 function transfer_data(x)
-  return x:cuda()
+  return x
+  --return x:cuda()
 end
 
 --local state_train, state_valid, state_test
