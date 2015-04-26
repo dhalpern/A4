@@ -22,6 +22,8 @@ else
     LookupTable = nn.LookupTable
 end
 ]]--
+stringx = require('pl.stringx')
+require('io')
 require('nn')
 LookupTable = nn.LookupTable
 require('nngraph')
@@ -107,7 +109,8 @@ function create_network()
   local pred             = nn.LogSoftMax()(h2y(dropped))
   local err              = nn.ClassNLLCriterion()({pred, y})
   local module           = nn.gModule({x, y, prev_s},
-                                      {err, nn.Identity()(next_s)})
+                                      {err, pred, nn.Identity()(next_s)})
+
   module:getParameters():uniform(-params.init_weight, params.init_weight)
   return transfer_data(module)
 end
@@ -133,6 +136,7 @@ function setup()
   model.rnns = g_cloneManyTimes(core_network, params.seq_length)
   model.norm_dw = 0
   model.err = transfer_data(torch.zeros(params.seq_length))
+  model.pred = transfer_data(torch.zeros(params.seq_length, params.batch_size, params.vocab_size))
 end
 
 function reset_state(state)
@@ -159,7 +163,7 @@ function fp(state)
     local x = state.data[state.pos]
     local y = state.data[state.pos + 1]
     local s = model.s[i - 1]
-    model.err[i], model.s[i] = unpack(model.rnns[i]:forward({x, y, s}))
+    model.err[i], model.pred[i], model.s[i] = unpack(model.rnns[i]:forward({x, y, s}))
     state.pos = state.pos + 1
   end
   g_replace_table(model.start_s, model.s[params.seq_length])
@@ -175,8 +179,9 @@ function bp(state)
     local y = state.data[state.pos + 1]
     local s = model.s[i - 1]
     local derr = transfer_data(torch.ones(1))
+    local dpreds = transfer_data(torch.zeros(params.batch_size, params.vocab_size))
     local tmp = model.rnns[i]:backward({x, y, s},
-                                       {derr, model.ds})[3]
+                                       {derr, dpreds, model.ds})[3] 
     g_replace_table(model.ds, tmp)
     --cutorch.synchronize()
   end
@@ -211,13 +216,81 @@ function run_test()
     local x = state_test.data[i]
     local y = state_test.data[i + 1]
     local s = model.s[i - 1]
-    perp_tmp, model.s[1] = unpack(model.rnns[1]:forward({x, y, model.s[0]}))
+    perp_tmp, _, model.s[1] = unpack(model.rnns[1]:forward({x, y, model.s[0]}))
     perp = perp + perp_tmp[1]
     g_replace_table(model.s[0], model.s[1])
   end
   print("Test set perplexity : " .. g_f3(torch.exp(perp / (len - 1))))
   g_enable_dropout(model.rnns)
 end
+
+function readline()
+  local line = io.read("*line")
+  if line == nil then error({code="EOF"}) end
+  line = stringx.split(line)
+  if tonumber(line[1]) == nil then error({code="init"}) end
+  for i = 2,#line do
+    if vocab_map[line[i]] == nil then error({code="vocab", word = line[i]}) end
+  end
+  return line
+end
+
+function qs_input()
+  while true do
+    print("Query: len word1 word2 etc")
+    local ok, line = pcall(readline)
+    if not ok then
+      if line.code == "EOF" then
+        break -- end loop
+      elseif line.code == "vocab" then
+        print("Word not in vocabulary, only 'foo' is in vocabulary: ", line.word)
+      elseif line.code == "init" then
+        print("Start with a number")
+      else
+        print(line)
+        print("Failed, try again")
+      end
+    else
+      return line
+      --[[
+      print("Thanks, I will print foo " .. line[1] .. " more times")
+      for i = 1, line[1] do io.write('foo ') end
+      io.write('\n')
+      ]]--
+    end
+  end
+end
+
+function query_sentences()
+  line = qs_input()
+  state_query = {data=select(2, unpack(line))}
+  predict_num = line[1]
+  reset_state(state_query)
+  g_disable_dropout(model.rnns)
+  local len = state_query.data:size(1)
+  local pred = torch.ones(params.vocab_size)
+  g_replace_table(model.s[0], model.start_s)
+  for i = 1, (len - 1) do
+    local x = state_query.data[i]
+    local y = state_query.data[i + 1]
+    local s = model.s[i - 1]
+    _, pred, model.s[1] = unpack(model.rnns[1]:forward({x, y, model.s[0]}))
+    g_replace_table(model.s[0], model.s[1])
+  end
+  local prev = state_query.data[len]
+  local sentence = {}
+  for i = len, (len + predict_num) do
+    local s = model.s[i - 1]
+    sentence[i - len] = prev
+    _, pred, model.s[1] = unpack(model.rnns[1]:forward({prev, pred, model.s[0]}))
+    prev = pred
+  end
+  print("Thanks, I will print foo " .. line[1] .. " more times")
+  for i = 1, sentence:size() do io.write(inv_vocab_map[sentence[i]], ' ') end
+  io.write('\n')
+  g_enable_dropout(model.rnns)
+end
+
 
 --function main()
 --g_init_gpu(arg)
@@ -260,6 +333,7 @@ while epoch < params.max_max_epoch do
          ', lr = ' ..  g_f3(params.lr) ..
          ', since beginning = ' .. since_beginning .. ' mins.')
  end
+ print(step % epoch_size)
  if step % epoch_size == 0 then
    run_valid()
    if epoch > params.max_epoch then
@@ -270,6 +344,7 @@ while epoch < params.max_max_epoch do
    --cutorch.synchronize()
    collectgarbage()
  end
+ print("epoch", epoch)
 end
 run_test()
 print("Training is over.")

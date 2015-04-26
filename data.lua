@@ -21,6 +21,7 @@ local validfn = ptb_path .. "ptb.char.valid.txt"
 
 local vocab_idx = 0
 local vocab_map = {}
+local inv_vocab_map = {}
 
 -- Stacks replicated, shifted versions of x_inp
 -- into a single matrix of size x_inp:size(1) x batch_size.
@@ -45,6 +46,7 @@ local function load_data(fname)
       if vocab_map[data[i]] == nil then
          vocab_idx = vocab_idx + 1
          vocab_map[data[i]] = vocab_idx
+         inv_vocab_map[vocab_idx] = data[i]
       end
       x[i] = vocab_map[data[i]]
    end
@@ -76,4 +78,5 @@ end
 return {traindataset=traindataset,
         testdataset=testdataset,
         validdataset=validdataset,
-        vocab_map=vocab_map}
+        vocab_map=vocab_map,
+        inv_vocab_map=inv_vocab_map}
