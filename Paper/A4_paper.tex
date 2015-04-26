@@ -42,7 +42,7 @@ Returns an rolled? version of the core LSTM module with parameters initialized u
 model.s is the trained of the sequence. model.ds is the gradients of the model for the backward pass. model.start_s is the final hidden states of the current minibatch and gets reset when the sequence ends
 
 \subsection{Q5}
-Clipped at params.max_grad_norm
+Clipped at params.max_grad_norm (shrink factor?)
 
 \subsection{Q6}
 Batch SGD
