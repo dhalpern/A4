@@ -333,7 +333,6 @@ while epoch < params.max_max_epoch do
          ', lr = ' ..  g_f3(params.lr) ..
          ', since beginning = ' .. since_beginning .. ' mins.')
  end
- print(step % epoch_size)
  if step % epoch_size == 0 then
    run_valid()
    if epoch > params.max_epoch then
@@ -344,8 +343,10 @@ while epoch < params.max_max_epoch do
    --cutorch.synchronize()
    collectgarbage()
  end
- print("epoch", epoch)
+ torch.save("lstm_model", model)
 end
 run_test()
+torch.save("lstm_model", model)
 print("Training is over.")
+query_sentences()
 --end
