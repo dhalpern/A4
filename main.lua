@@ -304,6 +304,7 @@ function query_sentences()
     _, pred, model.s[1] = unpack(model.rnns[1]:forward({x, y, model.s[0]}))
     g_replace_table(model.s[0], model.s[1])
   end
+  print("made it!")
   local prev = state_query.data[len]
   local sentence = {}
   for i = len, (len + predict_num) do
