@@ -161,7 +161,6 @@ function fp(state)
   end
   for i = 1, params.seq_length do
     local x = state.data[state.pos]
-    print(x)
     local y = state.data[state.pos + 1]
     local s = model.s[i - 1]
     model.err[i], model.pred[i], model.s[i] = unpack(model.rnns[i]:forward({x, y, s}))
