@@ -287,7 +287,8 @@ function query_sentences()
   for j = 1, len do
     words[j] = ptb.vocab_map[line[j]]
   end
-  print(words:resize(words:size(1), 1):dim())
+  words2 = words:resize(words:size(1), 1)
+  print(words2:expand(words:size(1), batch_size))
   print(words:resize(words:size(1), 1):expand(words:size(1), batch_size))
   words = words:resize(words:size(1), 1):expand(words:size(1), batch_size)
   state_query = {data=words}
