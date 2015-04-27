@@ -5,7 +5,6 @@
 ----  This source code is licensed under the Apache 2 license found in the
 ----  LICENSE file in the root directory of this source tree. 
 ----
---[[
 ok,cunn = pcall(require, 'fbcunn')
 if not ok then
     ok,cunn = pcall(require,'cunn')
@@ -21,14 +20,13 @@ else
     cudaComputeCapability = deviceParams.major + deviceParams.minor/10
     LookupTable = nn.LookupTable
 end
-]]--
 stringx = require('pl.stringx')
 require('io')
 require('nn')
-LookupTable = nn.LookupTable
+--LookupTable = nn.LookupTable
 require('nngraph')
 require('base')
-ptb = require('data')
+ptb = require('data_char')
 
 -- Train 1 day and gives 82 perplexity.
 --[[
@@ -62,8 +60,8 @@ local params = {batch_size=20,
                 max_grad_norm=5}
 
 function transfer_data(x)
-  return x
-  --return x:cuda()
+  --return x
+  return x:cuda()
 end
 
 --local state_train, state_valid, state_test
@@ -188,7 +186,7 @@ function bp(state)
     local tmp = model.rnns[i]:backward({x, y, s},
                                        {derr, dpred, model.ds})[3] 
     g_replace_table(model.ds, tmp)
-    --cutorch.synchronize()
+    cutorch.synchronize()
   end
   state.pos = state.pos + params.seq_length
   model.norm_dw = paramdx:norm()
@@ -236,7 +234,7 @@ function readline()
   line = stringx.split(line)
   if tonumber(line[1]) == nil then error({code="init"}) end
   for i = 2,#line do
-    if vocab_map[line[i]] == nil then error({code="vocab", word = line[i]}) end
+    if ptb.vocab_map[line[i]] == nil then error({code="vocab", word = line[i]}) end
   end
   return line
 end
@@ -283,11 +281,20 @@ end
 
 function query_sentences()
   line = qs_input()
-  state_query = {data=select(2, unpack(line))}
-  predict_num = line[1]
+  predict_num = table.remove(line, 1)
+  print(predict_num)
+  local len = table.getn(state_query.data)
+  data = torch.Tensor(len)
+  for j = 1, len do
+    data[j] = ptb.vocab_map[line[j]]
+  end
+  state_query = {data}
+  --print(state_query)
+  --mask = torch.ByteTensor(1, line_tensor:size())
+  --data = line_tensor
   reset_state(state_query)
   g_disable_dropout(model.rnns)
-  local len = state_query.data:size(1)
+  print(state_query)
   local pred = torch.ones(params.vocab_size)
   g_replace_table(model.s[0], model.start_s)
   for i = 1, (len - 1) do
@@ -306,14 +313,13 @@ function query_sentences()
     prev = argmax(pred)
   end
   print("Thanks, I will print foo " .. line[1] .. " more times")
-  for i = 1, sentence:size() do io.write(inv_vocab_map[sentence[i]], ' ') end
+  for i = 1, sentence:size() do io.write(ptb.inv_vocab_map[sentence[i]], ' ') end
   io.write('\n')
   g_enable_dropout(model.rnns)
 end
 
-
 --function main()
---g_init_gpu(arg)
+g_init_gpu(arg)
 state_train = {data=transfer_data(ptb.traindataset(params.batch_size))}
 state_valid =  {data=transfer_data(ptb.validdataset(params.batch_size))}
 --state_test =  {data=transfer_data(ptb.testdataset(params.batch_size))}
@@ -362,13 +368,18 @@ while epoch < params.max_max_epoch do
    end
  end
  if step % 33 == 0 then
-   --cutorch.synchronize()
+   cutorch.synchronize()
    collectgarbage()
  end
  --torch.save("lstm_model", model)
 end
 --run_test()
 torch.save("lstm_model", model)
+torch.save("lstm_vocab_map", ptb.vocab_map)
+torch.save("lstm_inv_vocab_map", ptb.inv_vocab_map)
 print("Training is over.")
+ptb.inv_vocab_map = torch.load("./lstm_inv_vocab_map")
+ptb.vocab_map = torch.load("./lstm_vocab_map")
+model = torch.load("./lstm_model")
 query_sentences()
 --end
