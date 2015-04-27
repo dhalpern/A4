@@ -374,12 +374,12 @@ while epoch < params.max_max_epoch do
  --torch.save("lstm_model", model)
 end
 --run_test()
-torch.save("lstm_model", model)
-torch.save("lstm_vocab_map", ptb.vocab_map)
-torch.save("lstm_inv_vocab_map", ptb.inv_vocab_map)
+torch.save("char_model", model)
+torch.save("char_vocab_map", ptb.vocab_map)
+torch.save("char_inv_vocab_map", ptb.inv_vocab_map)
 print("Training is over.")
-ptb.inv_vocab_map = torch.load("./lstm_inv_vocab_map")
-ptb.vocab_map = torch.load("./lstm_vocab_map")
-model = torch.load("./lstm_model")
+ptb.inv_vocab_map = torch.load("./char_inv_vocab_map")
+ptb.vocab_map = torch.load("./char_vocab_map")
+model = torch.load("./char_model")
 query_sentences()
 --end
