@@ -434,7 +434,6 @@ if opt.mode == "train" then
       torch.save("lstm_inv_vocab_map", ptb.inv_vocab_map)
    end
    ]]--
-   print("word!")
   end
   run_test()
   print("Training is over.")
