@@ -287,6 +287,7 @@ function query_sentences()
   for j = 1, len do
     words[j] = ptb.vocab_map[line[j]]
   end
+  words = words:resize(words:size(1), 1):expand(words:size(1), batch_size)
   state_query = {data=words}
   --print(state_query)
   --mask = torch.ByteTensor(1, line_tensor:size())
@@ -381,7 +382,7 @@ print("Training is over.")
 ptb.inv_vocab_map = torch.load("./lstm_inv_vocab_map")
 ptb.vocab_map = torch.load("./lstm_vocab_map")
 model = torch.load("./lstm_model")
-state_test =  {data=transfer_data(ptb.testdataset(params.batch_size))}
-run_test()
+--state_test =  {data=transfer_data(ptb.testdataset(params.batch_size))}
+--run_test()
 query_sentences()
 --end
