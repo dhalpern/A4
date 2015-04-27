@@ -298,7 +298,6 @@ function query_sentences()
   for i = 1, (len - 1) do
     local x = state_query.data[i]
     local y = state_query.data[i + 1]
-    print(y)
     local s = model.s[i - 1]
     _, pred, model.s[1] = unpack(model.rnns[1]:forward({x, y, model.s[0]}))
     g_replace_table(model.s[0], model.s[1])
@@ -309,11 +308,15 @@ function query_sentences()
   for i = len, (len + predict_num) do
     print("second half!")
     local s = model.s[i - 1]
-    sentence[i - len] = x
+    if i > len then
+      x = x:resize(x:size(1), 1):expand(x:size(1), params.batch_size)
+      y = x
+    end
     _, pred, model.s[1] = unpack(model.rnns[1]:forward({x, y, model.s[0]}))
     print(pred)
     x = argmax(pred)
-    y = x
+    print(x)
+    sentence[i + 1 - len] = x
   end
   print("Thanks, I will print foo " .. line[1] .. " more times")
   for i = 1, sentence:size() do io.write(ptb.inv_vocab_map[sentence[i]], ' ') end
