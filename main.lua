@@ -316,6 +316,7 @@ function query_sentences()
   g_enable_dropout(model.rnns)
 end
 
+--[[
 --function main()
 g_init_gpu(arg)
 state_train = {data=transfer_data(ptb.traindataset(params.batch_size))}
@@ -374,6 +375,7 @@ torch.save("lstm_model", model)
 torch.save("lstm_vocab_map", ptb.vocab_map)
 torch.save("lstm_inv_vocab_map", ptb.inv_vocab_map)
 print("Training is over.")
+]]--
 ptb.inv_vocab_map = torch.load("./lstm_inv_vocab_map")
 ptb.vocab_map = torch.load("./lstm_vocab_map")
 model = torch.load("./lstm_model")
