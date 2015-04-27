@@ -279,11 +279,19 @@ end
 
 function query_sentences()
   line = qs_input()
-  state_query = {data=select(2, unpack(line))}
-  predict_num = line[1]
+  predict_num = table.remove(line, 1)
+  print(predict_num)
+  local len = table.getn(state_query.data)
+  data = torch.Tensor(len)
+  for j = 1, len do
+    data[j] = ptb.vocab_map[line[j]]
+  state_query = {data}
+  --print(state_query)
+  --mask = torch.ByteTensor(1, line_tensor:size())
+  --data = line_tensor
   reset_state(state_query)
   g_disable_dropout(model.rnns)
-  local len = state_query.data:size(1)
+  print(state_query)
   local pred = torch.ones(params.vocab_size)
   g_replace_table(model.s[0], model.start_s)
   for i = 1, (len - 1) do
@@ -307,7 +315,7 @@ function query_sentences()
   g_enable_dropout(model.rnns)
 end
 
-
+--[[
 --function main()
 g_init_gpu(arg)
 state_train = {data=transfer_data(ptb.traindataset(params.batch_size))}
@@ -360,14 +368,15 @@ while epoch < params.max_max_epoch do
    collectgarbage()
  end
  --torch.save("lstm_model", model)
-  torch.save("lstm_model", model)
-  torch.save("lstm_vocab_map", ptb.vocab_map)
-  torch.save("lstm_inv_vocab_map", ptb.inv_vocab_map)
 end
 run_test()
 torch.save("lstm_model", model)
 torch.save("lstm_vocab_map", ptb.vocab_map)
 torch.save("lstm_inv_vocab_map", ptb.inv_vocab_map)
 print("Training is over.")
+]]--
+ptb.inv_vocab_map = torch.load("./lstm_inv_vocab_map")
+ptb.vocab_map = torch.load("./lstm_vocab_map")
+model = torch.load("./lstm_model")
 query_sentences()
 --end
