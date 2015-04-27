@@ -409,6 +409,7 @@ if opt.mode == "train" then
            ', dw:norm() = ' .. g_f3(model.norm_dw) ..
            ', lr = ' ..  g_f3(params.lr) ..
            ', since beginning = ' .. since_beginning .. ' mins.')
+    end
    end
    if step % epoch_size == 0 then
      run_valid()
