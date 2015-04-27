@@ -381,6 +381,7 @@ print("Training is over.")
 ptb.inv_vocab_map = torch.load("./lstm_inv_vocab_map")
 ptb.vocab_map = torch.load("./lstm_vocab_map")
 model = torch.load("./lstm_model")
+state_test =  {data=transfer_data(ptb.testdataset(params.batch_size))}
 run_test()
 query_sentences()
 --end
