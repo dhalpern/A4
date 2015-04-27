@@ -302,9 +302,9 @@ function query_sentences()
     _, pred, model.s[1] = unpack(model.rnns[1]:forward({x, y, model.s[0]}))
     g_replace_table(model.s[0], model.s[1])
   end
-  local x = state_query.data[len]
-  local y = x
-  local sentence = {}
+  x = state_query.data[len]
+  y = x
+  sentence = {}
   for i = len, (len + predict_num) do
     print("second half!")
     local s = model.s[i - 1]
