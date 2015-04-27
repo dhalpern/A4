@@ -74,7 +74,7 @@ local params = {batch_size=20,
                 max_grad_norm=5}
 
 if opt.level == 'char' then
-  local params = {batch_size=20,
+  params = {batch_size=20,
                 seq_length=50,
                 layers=2,
                 decay=2,
