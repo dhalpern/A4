@@ -288,7 +288,7 @@ function query_sentences()
     words[j] = ptb.vocab_map[line[j]]
   end
   words = words:resize(words:size(1), 1):expand(words:size(1), params.batch_size)
-  state_query = {data=words}
+  state_query = {data=transfer_data(words)}
   reset_state(state_query)
   g_disable_dropout(model.rnns)
   print(state_query)
