@@ -216,6 +216,7 @@ function run_test()
   g_replace_table(model.s[0], model.start_s)
   for i = 1, (len - 1) do
     local x = state_test.data[i]
+    print(x)
     local y = state_test.data[i + 1]
     local s = model.s[i - 1]
     perp_tmp, _, model.s[1] = unpack(model.rnns[1]:forward({x, y, model.s[0]}))
@@ -380,5 +381,6 @@ print("Training is over.")
 ptb.inv_vocab_map = torch.load("./lstm_inv_vocab_map")
 ptb.vocab_map = torch.load("./lstm_vocab_map")
 model = torch.load("./lstm_model")
+run_test()
 query_sentences()
 --end
