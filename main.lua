@@ -287,10 +287,6 @@ function query_sentences()
   for j = 1, len do
     words[j] = ptb.vocab_map[line[j]]
   end
-  words2 = words:resize(words:size(1), 1)
-  print(words2)
-  print(words2:expand(2, 10))
-  print(words:resize(words:size(1), 1):expand(words:size(1), params.batch_size))
   words = words:resize(words:size(1), 1):expand(words:size(1), params.batch_size)
   state_query = {data=words}
   --print(state_query)
@@ -303,7 +299,6 @@ function query_sentences()
   g_replace_table(model.s[0], model.start_s)
   for i = 1, (len - 1) do
     local x = state_query.data[i]
-    print(x)
     local y = state_query.data[i + 1]
     local s = model.s[i - 1]
     _, pred, model.s[1] = unpack(model.rnns[1]:forward({x, y, model.s[0]}))
@@ -312,6 +307,7 @@ function query_sentences()
   local prev = state_query.data[len]
   local sentence = {}
   for i = len, (len + predict_num) do
+    print("second half!")
     local s = model.s[i - 1]
     sentence[i - len] = prev
     _, pred, model.s[1] = unpack(model.rnns[1]:forward({prev, pred, model.s[0]}))
