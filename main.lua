@@ -337,16 +337,13 @@ function query_sentences()
   y = x
   sentence = {}
   for i = len, (len + predict_num) do
-    print("second half!")
     local s = model.s[i - 1]
     print(type(x))
     if i > len then
       x = transfer_data(torch.Tensor(params.batch_size):fill(x))
       y = x
     end
-    print("x", x)
     _, pred, model.s[1] = unpack(model.rnns[1]:forward({x, y, model.s[0]}))
-    --print(pred[2])
     x = argmax(pred[2])
     sentence[i + 1 - len] = x
   end
@@ -421,6 +418,7 @@ if opt.mode == "train" then
      cutorch.synchronize()
      collectgarbage()
    end
+   --[[
    if opt.level == "char" then
       torch.save("char_model", model)
       torch.save("char_vocab_map", ptb.vocab_map)
@@ -430,6 +428,7 @@ if opt.mode == "train" then
       torch.save("lstm_vocab_map", ptb.vocab_map)
       torch.save("lstm_inv_vocab_map", ptb.inv_vocab_map)
    end
+   ]]--
   end
   run_test()
   print("Training is over.")
