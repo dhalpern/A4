@@ -239,7 +239,7 @@ function readline()
 end
 
 --Taken from https://github.com/rlowrance/re/blob/master/argmax.lua
-local function argmax_1D(v)
+local function argmax(v)
    local length = v:size(1)
    assert(length > 0)
 
