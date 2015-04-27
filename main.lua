@@ -314,10 +314,10 @@ function query_sentences()
       x = torch.Tensor(params.batch_size,1):fill(x)
       y = x
     end
+    print("x", x)
     _, pred, model.s[1] = unpack(model.rnns[1]:forward({x, y, model.s[0]}))
     print(pred[2])
     x = argmax(pred[2])
-    print("x", x)
     sentence[i + 1 - len] = x
   end
   print("Thanks, I will print foo " .. line[1] .. " more times")
