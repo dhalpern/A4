@@ -285,6 +285,7 @@ function query_sentences()
   data = torch.Tensor(len)
   for j = 1, len do
     data[j] = ptb.vocab_map[line[j]]
+  end
   state_query = {data}
   --print(state_query)
   --mask = torch.ByteTensor(1, line_tensor:size())
