@@ -303,11 +303,13 @@ function query_sentences()
     g_replace_table(model.s[0], model.s[1])
   end
   x = state_query.data[len]
+  print(x)
   y = x
   sentence = {}
   for i = len, (len + predict_num) do
     print("second half!")
     local s = model.s[i - 1]
+    print(x)
     if i > len then
       x = x:resize(x:size(1), 1):expand(x:size(1), params.batch_size)
       y = x
