@@ -289,7 +289,7 @@ function query_sentences()
   end
   words2 = words:resize(words:size(1), 1)
   print(words2)
-  print(words2:expand(words:size(1), batch_size))
+  print(words2:expand(2, 10))
   print(words:resize(words:size(1), 1):expand(words:size(1), batch_size))
   words = words:resize(words:size(1), 1):expand(words:size(1), batch_size)
   state_query = {data=words}
