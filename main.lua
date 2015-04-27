@@ -232,7 +232,7 @@ function readline()
   line = stringx.split(line)
   if tonumber(line[1]) == nil then error({code="init"}) end
   for i = 2,#line do
-    if vocab_map[line[i]] == nil then error({code="vocab", word = line[i]}) end
+    if ptb.vocab_map[line[i]] == nil then error({code="vocab", word = line[i]}) end
   end
   return line
 end
@@ -302,7 +302,7 @@ function query_sentences()
     prev = argmax(pred)
   end
   print("Thanks, I will print foo " .. line[1] .. " more times")
-  for i = 1, sentence:size() do io.write(inv_vocab_map[sentence[i]], ' ') end
+  for i = 1, sentence:size() do io.write(ptb.inv_vocab_map[sentence[i]], ' ') end
   io.write('\n')
   g_enable_dropout(model.rnns)
 end
@@ -363,6 +363,7 @@ while epoch < params.max_max_epoch do
 end
 run_test()
 torch.save("lstm_model", model)
+torch.save("lstm_ptb", ptb)
 print("Training is over.")
 query_sentences()
 --end
