@@ -283,7 +283,7 @@ function query_sentences()
   line = qs_input()
   predict_num = table.remove(line, 1)
   print(predict_num)
-  local len = table.getn(line)
+  local len = line:getn()
   words = torch.Tensor(len)
   for j = 1, len do
     words[j] = ptb.vocab_map[line[j]]
@@ -321,7 +321,7 @@ function query_sentences()
     sentence[i + 1 - len] = x
   end
   print("Thanks, I will print foo " .. line[1] .. " more times")
-  for i = 1, sentence:size() do io.write(ptb.inv_vocab_map[sentence[i]], ' ') end
+  for i = 1, sentence:getn() do io.write(ptb.inv_vocab_map[sentence[i]], ' ') end
   io.write('\n')
   g_enable_dropout(model.rnns)
 end
