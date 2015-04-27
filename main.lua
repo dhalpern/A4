@@ -360,10 +360,14 @@ while epoch < params.max_max_epoch do
    collectgarbage()
  end
  --torch.save("lstm_model", model)
+  torch.save("lstm_model", model)
+  torch.save("lstm_vocab_map", ptb.vocab_map)
+  torch.save("lstm_inv_vocab_map", ptb.inv_vocab_map)
 end
 run_test()
 torch.save("lstm_model", model)
-torch.save("lstm_ptb", ptb)
+torch.save("lstm_vocab_map", ptb.vocab_map)
+torch.save("lstm_inv_vocab_map", ptb.inv_vocab_map)
 print("Training is over.")
 query_sentences()
 --end
