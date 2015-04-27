@@ -309,7 +309,7 @@ function query_sentences()
   for i = len, (len + predict_num) do
     print("second half!")
     local s = model.s[i - 1]
-    print(type(x)
+    print(type(x))
     if i > len then
       temp = x:resize(x:size(1), 1):expand(x:size(1), params.batch_size)
       x = temp
