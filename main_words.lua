@@ -5,18 +5,6 @@
 ----  This source code is licensed under the Apache 2 license found in the
 ----  LICENSE file in the root directory of this source tree. 
 ----
-if not opt then
-  cmd = torch.CmdLine()
-  cmd:text()
-  cmd:text('LSTM Model')
-  cmd:text()
-  cmd:text('Options:')
-  cmd:option('-mode','train','mode: train | evaluate | query')
-  cmd:option('-level', 'char', 'word | char')
-  cmd:text()
-  opt = cmd:parse(arg or {})
-end
-
 ok,cunn = pcall(require, 'fbcunn')
 if not ok then
     ok,cunn = pcall(require,'cunn')
@@ -39,9 +27,6 @@ require('nn')
 require('nngraph')
 require('base')
 ptb = require('data')
-if opt.level == 'char' then
-  ptb = require('data_char')
-end
 
 -- Train 1 day and gives 82 perplexity.
 --[[
@@ -72,22 +57,6 @@ local params = {batch_size=20,
                 max_epoch=4,
                 max_max_epoch=13,
                 max_grad_norm=5}
-
-if opt.level == 'char' then
-  local params = {batch_size=20,
-                seq_length=50,
-                layers=2,
-                decay=2,
-                rnn_size=200,
-                dropout=0,
-                init_weight=0.1,
-                lr=1,
-                vocab_size=50,
-                max_epoch=4,
-                max_max_epoch=13,
-                max_grad_norm=5}
-end
-
 
 function transfer_data(x)
   --return x
@@ -235,11 +204,7 @@ function run_valid()
   for i = 1, len do
     perp = perp + fp(state_valid)
   end
-  if opt.level == 'char' then
-    print("Validation set perplexity : " .. g_f3(torch.exp((5.6 * perp) / len)))
-  else
-    print("Validation set perplexity : " .. g_f3(torch.exp(perp / len)))
-  end
+  print("Validation set perplexity : " .. g_f3(torch.exp(perp / len)))
   g_enable_dropout(model.rnns)
 end
 
@@ -305,6 +270,11 @@ function qs_input()
       end
     else
       return line
+      --[[
+      print("Thanks, I will print foo " .. line[1] .. " more times")
+      for i = 1, line[1] do io.write('foo ') end
+      io.write('\n')
+      ]]--
     end
   end
 end
@@ -356,87 +326,70 @@ function query_sentences()
   g_enable_dropout(model.rnns)
 end
 
+--[[
 --function main()
 g_init_gpu(arg)
 state_train = {data=transfer_data(ptb.traindataset(params.batch_size))}
 state_valid =  {data=transfer_data(ptb.validdataset(params.batch_size))}
-if opt.level == "char" then
-  states = {state_train, state_valid}
-else
-  state_test =  {data=transfer_data(ptb.testdataset(params.batch_size))}
-  states = {state_train, state_valid, state_test}
-end
+state_test =  {data=transfer_data(ptb.testdataset(params.batch_size))}
 print("Network parameters:")
 print(params)
+local states = {state_train, state_valid, state_test}
 for _, state in pairs(states) do
  reset_state(state)
 end
-if opt.mode == "train" then 
-  setup()
-  step = 0
-  epoch = 0
-  total_cases = 0
-  beginning_time = torch.tic()
-  start_time = torch.tic()
-  print("Starting training.")
-  words_per_step = params.seq_length * params.batch_size
-  epoch_size = torch.floor(state_train.data:size(1) / params.seq_length)
-  --perps
-  while epoch < params.max_max_epoch do
-   perp = fp(state_train)
-   if perps == nil then
-     perps = torch.zeros(epoch_size):add(perp)
+setup()
+step = 0
+epoch = 0
+total_cases = 0
+beginning_time = torch.tic()
+start_time = torch.tic()
+print("Starting training.")
+words_per_step = params.seq_length * params.batch_size
+epoch_size = torch.floor(state_train.data:size(1) / params.seq_length)
+--perps
+while epoch < params.max_max_epoch do
+ perp = fp(state_train)
+ if perps == nil then
+   perps = torch.zeros(epoch_size):add(perp)
+ end
+ perps[step % epoch_size + 1] = perp
+ step = step + 1
+ bp(state_train)
+ total_cases = total_cases + params.seq_length * params.batch_size
+ epoch = step / epoch_size
+ if step % torch.round(epoch_size / 10) == 10 then
+   wps = torch.floor(total_cases / torch.toc(start_time))
+   since_beginning = g_d(torch.toc(beginning_time) / 60)
+   print('epoch = ' .. g_f3(epoch) ..
+         ', train perp. = ' .. g_f3(torch.exp(perps:mean())) ..
+         ', wps = ' .. wps ..
+         ', dw:norm() = ' .. g_f3(model.norm_dw) ..
+         ', lr = ' ..  g_f3(params.lr) ..
+         ', since beginning = ' .. since_beginning .. ' mins.')
+ end
+ if step % epoch_size == 0 then
+   run_valid()
+   if epoch > params.max_epoch then
+       params.lr = params.lr / params.decay
    end
-   perps[step % epoch_size + 1] = perp
-   step = step + 1
-   bp(state_train)
-   total_cases = total_cases + params.seq_length * params.batch_size
-   epoch = step / epoch_size
-   if step % torch.round(epoch_size / 10) == 10 then
-     wps = torch.floor(total_cases / torch.toc(start_time))
-     since_beginning = g_d(torch.toc(beginning_time) / 60)
-     if opt.level == "char" then
-      print('epoch = ' .. g_f3(epoch) ..
-           ', train perp. = ' .. g_f3(torch.exp(5.6 * perps:mean())) ..
-           ', wps = ' .. wps ..
-           ', dw:norm() = ' .. g_f3(model.norm_dw) ..
-           ', lr = ' ..  g_f3(params.lr) ..
-           ', since beginning = ' .. since_beginning .. ' mins.')
-     else
-      print('epoch = ' .. g_f3(epoch) ..
-           ', train perp. = ' .. g_f3(torch.exp(perps:mean())) ..
-           ', wps = ' .. wps ..
-           ', dw:norm() = ' .. g_f3(model.norm_dw) ..
-           ', lr = ' ..  g_f3(params.lr) ..
-           ', since beginning = ' .. since_beginning .. ' mins.')
-   end
-   if step % epoch_size == 0 then
-     run_valid()
-     if epoch > params.max_epoch then
-         params.lr = params.lr / params.decay
-     end
-   end
-   if step % 33 == 0 then
-     cutorch.synchronize()
-     collectgarbage()
-   end
-   if opt.level == "char" then
-      torch.save("char_model", model)
-      torch.save("char_vocab_map", ptb.vocab_map)
-      torch.save("char_inv_vocab_map", ptb.inv_vocab_map)
-   else
-      torch.save("lstm_model", model)
-      torch.save("lstm_vocab_map", ptb.vocab_map)
-      torch.save("lstm_inv_vocab_map", ptb.inv_vocab_map)
-   end
-  end
-  run_test()
-  print("Training is over.")
+ end
+ if step % 33 == 0 then
+   cutorch.synchronize()
+   collectgarbage()
+ end
+ --torch.save("lstm_model", model)
 end
-if opt.mode == "query" then
-  ptb.inv_vocab_map = torch.load("./lstm_inv_vocab_map")
-  ptb.vocab_map = torch.load("./lstm_vocab_map")
-  model = torch.load("./lstm_model")
-  query_sentences()
-end
+run_test()
+torch.save("lstm_model", model)
+torch.save("lstm_vocab_map", ptb.vocab_map)
+torch.save("lstm_inv_vocab_map", ptb.inv_vocab_map)
+print("Training is over.")
+]]--
+ptb.inv_vocab_map = torch.load("./lstm_inv_vocab_map")
+ptb.vocab_map = torch.load("./lstm_vocab_map")
+model = torch.load("./lstm_model")
+--state_test =  {data=transfer_data(ptb.testdataset(params.batch_size))}
+--run_test()
+query_sentences()
 --end
