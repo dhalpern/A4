@@ -311,8 +311,7 @@ function query_sentences()
     local s = model.s[i - 1]
     print(type(x))
     if i > len then
-      temp = x:resize(x:size(1), 1):expand(x:size(1), params.batch_size)
-      x = temp
+      x = torch.Tensor(params.batch_size,1):fill(x)
       y = x
     end
     _, pred, model.s[1] = unpack(model.rnns[1]:forward({x, y, model.s[0]}))
