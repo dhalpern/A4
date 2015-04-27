@@ -311,7 +311,7 @@ function query_sentences()
     local s = model.s[i - 1]
     print(type(x))
     if i > len then
-      x = torch.Tensor(params.batch_size,1):fill(x)
+      x = transfer_data(torch.Tensor(params.batch_size,1):fill(x))
       y = x
     end
     print("x", x)
