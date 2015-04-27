@@ -297,6 +297,7 @@ function query_sentences()
   g_replace_table(model.s[0], model.start_s)
   for i = 1, (len - 1) do
     local x = state_query.data[i]
+    print(x)
     local y = state_query.data[i + 1]
     local s = model.s[i - 1]
     _, pred, model.s[1] = unpack(model.rnns[1]:forward({x, y, model.s[0]}))
