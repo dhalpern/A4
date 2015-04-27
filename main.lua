@@ -316,7 +316,7 @@ function query_sentences()
     end
     print("x", x)
     _, pred, model.s[1] = unpack(model.rnns[1]:forward({x, y, model.s[0]}))
-    print(pred[2])
+    --print(pred[2])
     x = argmax(pred[2])
     sentence[i + 1 - len] = x
   end
