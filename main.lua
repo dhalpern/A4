@@ -353,6 +353,11 @@ function query_sentences()
   g_enable_dropout(model.rnns)
 end
 
+function evaluate()
+  print("OK GO")
+  inp = qs_input()
+
+end
 --function main()
 g_init_gpu({1})
 state_train = {data=transfer_data(ptb.traindataset(params.batch_size))}
@@ -429,6 +434,7 @@ if opt.mode == "train" then
       torch.save("lstm_inv_vocab_map", ptb.inv_vocab_map)
    end
    ]]--
+   print("word!")
   end
   run_test()
   print("Training is over.")
