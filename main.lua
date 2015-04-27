@@ -320,7 +320,7 @@ function query_sentences()
     x = argmax(pred[2])
     sentence[i + 1 - len] = x
   end
-  print("Thanks, I will print foo " .. line[1] .. " more times")
+  print("Here ya go:")
   for i = 1, table.getn(sentence) do io.write(ptb.inv_vocab_map[sentence[i]], ' ') end
   io.write('\n')
   g_enable_dropout(model.rnns)
