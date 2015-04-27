@@ -289,9 +289,6 @@ function query_sentences()
   end
   words = words:resize(words:size(1), 1):expand(words:size(1), params.batch_size)
   state_query = {data=words}
-  --print(state_query)
-  --mask = torch.ByteTensor(1, line_tensor:size())
-  --data = line_tensor
   reset_state(state_query)
   g_disable_dropout(model.rnns)
   print(state_query)
@@ -302,6 +299,7 @@ function query_sentences()
     local y = state_query.data[i + 1]
     local s = model.s[i - 1]
     _, pred, model.s[1] = unpack(model.rnns[1]:forward({x, y, model.s[0]}))
+    print(pred)
     g_replace_table(model.s[0], model.s[1])
   end
   print("made it!")
