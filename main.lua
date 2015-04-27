@@ -303,16 +303,17 @@ function query_sentences()
     _, pred, model.s[1] = unpack(model.rnns[1]:forward({x, y, model.s[0]}))
     g_replace_table(model.s[0], model.s[1])
   end
-  local prev = state_query.data[len][1]
+  local x = state_query.data[len]
+  local y = x
   local sentence = {}
   for i = len, (len + predict_num) do
     print("second half!")
     local s = model.s[i - 1]
-    print(prev)
-    sentence[i - len] = prev
-    _, pred, model.s[1] = unpack(model.rnns[1]:forward({prev, pred, model.s[0]}))
+    sentence[i - len] = x
+    _, pred, model.s[1] = unpack(model.rnns[1]:forward({x, y, model.s[0]}))
     print(pred)
-    prev = argmax(pred)
+    x = argmax(pred)
+    y = x
   end
   print("Thanks, I will print foo " .. line[1] .. " more times")
   for i = 1, sentence:size() do io.write(ptb.inv_vocab_map[sentence[i]], ' ') end
@@ -383,7 +384,7 @@ print("Training is over.")
 ptb.inv_vocab_map = torch.load("./lstm_inv_vocab_map")
 ptb.vocab_map = torch.load("./lstm_vocab_map")
 model = torch.load("./lstm_model")
-state_test =  {data=transfer_data(ptb.testdataset(params.batch_size))}
-run_test()
+--state_test =  {data=transfer_data(ptb.testdataset(params.batch_size))}
+--run_test()
 query_sentences()
 --end
