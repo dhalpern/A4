@@ -297,10 +297,9 @@ function query_sentences()
   for i = 1, (len - 1) do
     local x = state_query.data[i]
     local y = state_query.data[i + 1]
+    print(y)
     local s = model.s[i - 1]
-    print(x)
     _, pred, model.s[1] = unpack(model.rnns[1]:forward({x, y, model.s[0]}))
-    print(pred)
     g_replace_table(model.s[0], model.s[1])
   end
   local prev = state_query.data[len][1]
