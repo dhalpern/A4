@@ -282,11 +282,11 @@ function query_sentences()
   predict_num = table.remove(line, 1)
   print(predict_num)
   local len = table.getn(line)
-  data = torch.Tensor(len)
+  words = torch.Tensor(len)
   for j = 1, len do
-    data[j] = ptb.vocab_map[line[j]]
+    words[j] = ptb.vocab_map[line[j]]
   end
-  state_query = {data}
+  state_query = {data=words}
   --print(state_query)
   --mask = torch.ByteTensor(1, line_tensor:size())
   --data = line_tensor
