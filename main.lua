@@ -357,7 +357,7 @@ function query_sentences()
 end
 
 --function main()
-g_init_gpu(1)
+g_init_gpu({1})
 state_train = {data=transfer_data(ptb.traindataset(params.batch_size))}
 state_valid =  {data=transfer_data(ptb.validdataset(params.batch_size))}
 if opt.level == "char" then
