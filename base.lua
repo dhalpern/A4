@@ -67,7 +67,6 @@ function g_cloneManyTimes(net, T)
   return clones
 end
 
---[[
 function g_init_gpu(args)
   local gpuidx = args
   gpuidx = gpuidx[1] or 1
@@ -81,7 +80,6 @@ function g_make_deterministic(seed)
   cutorch.manualSeed(seed)
   torch.zeros(1, 1):cuda():uniform()
 end
-]]--
 
 function g_replace_table(to, from)
   assert(#to == #from)

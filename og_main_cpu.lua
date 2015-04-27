@@ -1,10 +1,11 @@
--
+--
 ----  Copyright (c) 2014, Facebook, Inc.
 ----  All rights reserved.
 ----
 ----  This source code is licensed under the Apache 2 license found in the
 ----  LICENSE file in the root directory of this source tree. 
 ----
+--[[
 ok,cunn = pcall(require, 'fbcunn')
 if not ok then
     ok,cunn = pcall(require,'cunn')
@@ -20,10 +21,9 @@ else
     cudaComputeCapability = deviceParams.major + deviceParams.minor/10
     LookupTable = nn.LookupTable
 end
-stringx = require('pl.stringx')
-require('io')
+]]--
 require('nn')
---LookupTable = nn.LookupTable
+LookupTable = nn.LookupTable
 require('nngraph')
 require('base')
 ptb = require('data')
@@ -59,8 +59,8 @@ local params = {batch_size=20,
                 max_grad_norm=5}
 
 function transfer_data(x)
-  --return x
-  return x:cuda()
+  return x
+  --return x:cuda()
 end
 
 --local state_train, state_valid, state_test
@@ -105,11 +105,9 @@ function create_network()
   local h2y              = nn.Linear(params.rnn_size, params.vocab_size)
   local dropped          = nn.Dropout(params.dropout)(i[params.layers])
   local pred             = nn.LogSoftMax()(h2y(dropped))
-  --local pred_y           = nn.Max(2)(pred)
   local err              = nn.ClassNLLCriterion()({pred, y})
   local module           = nn.gModule({x, y, prev_s},
-                                      {err, pred, nn.Identity()(next_s)})
-
+                                      {err, nn.Identity()(next_s)})
   module:getParameters():uniform(-params.init_weight, params.init_weight)
   return transfer_data(module)
 end
@@ -135,8 +133,6 @@ function setup()
   model.rnns = g_cloneManyTimes(core_network, params.seq_length)
   model.norm_dw = 0
   model.err = transfer_data(torch.zeros(params.seq_length))
-  model.pred = transfer_data(torch.zeros(params.seq_length, params.batch_size, params.vocab_size))
-  --model.pred_y = transfer_data(torch.zeros(params.seq_length))
 end
 
 function reset_state(state)
@@ -161,10 +157,9 @@ function fp(state)
   end
   for i = 1, params.seq_length do
     local x = state.data[state.pos]
-    print(x)
     local y = state.data[state.pos + 1]
     local s = model.s[i - 1]
-    model.err[i], model.pred[i], model.s[i] = unpack(model.rnns[i]:forward({x, y, s}))
+    model.err[i], model.s[i] = unpack(model.rnns[i]:forward({x, y, s}))
     state.pos = state.pos + 1
   end
   g_replace_table(model.start_s, model.s[params.seq_length])
@@ -178,15 +173,12 @@ function bp(state)
     state.pos = state.pos - 1
     local x = state.data[state.pos]
     local y = state.data[state.pos + 1]
-    --print(y)
     local s = model.s[i - 1]
     local derr = transfer_data(torch.ones(1))
-    local dpred = transfer_data(torch.zeros(params.batch_size, params.vocab_size))
-    --local dpred_y = transfer_data(torch.zeros())
     local tmp = model.rnns[i]:backward({x, y, s},
-                                       {derr, dpred, model.ds})[3] 
+                                       {derr, model.ds})[3]
     g_replace_table(model.ds, tmp)
-    cutorch.synchronize()
+    --cutorch.synchronize()
   end
   state.pos = state.pos + params.seq_length
   model.norm_dw = paramdx:norm()
@@ -219,7 +211,7 @@ function run_test()
     local x = state_test.data[i]
     local y = state_test.data[i + 1]
     local s = model.s[i - 1]
-    perp_tmp, _, model.s[1] = unpack(model.rnns[1]:forward({x, y, model.s[0]}))
+    perp_tmp, model.s[1] = unpack(model.rnns[1]:forward({x, y, model.s[0]}))
     perp = perp + perp_tmp[1]
     g_replace_table(model.s[0], model.s[1])
   end
@@ -227,90 +219,8 @@ function run_test()
   g_enable_dropout(model.rnns)
 end
 
-function readline()
-  local line = io.read("*line")
-  if line == nil then error({code="EOF"}) end
-  line = stringx.split(line)
-  if tonumber(line[1]) == nil then error({code="init"}) end
-  for i = 2,#line do
-    if vocab_map[line[i]] == nil then error({code="vocab", word = line[i]}) end
-  end
-  return line
-end
-
---Taken from https://github.com/rlowrance/re/blob/master/argmax.lua
-local function argmax_1D(v)
-   local length = v:size(1)
-   assert(length > 0)
-
-   -- examine on average half the entries
-   local maxValue = torch.max(v)
-   for i = 1, v:size(1) do
-      if v[i] == maxValue then
-         return i
-      end
-   end
-end
-
-function qs_input()
-  while true do
-    print("Query: len word1 word2 etc")
-    local ok, line = pcall(readline)
-    if not ok then
-      if line.code == "EOF" then
-        break -- end loop
-      elseif line.code == "vocab" then
-        print("Word not in vocabulary, only 'foo' is in vocabulary: ", line.word)
-      elseif line.code == "init" then
-        print("Start with a number")
-      else
-        print(line)
-        print("Failed, try again")
-      end
-    else
-      return line
-      --[[
-      print("Thanks, I will print foo " .. line[1] .. " more times")
-      for i = 1, line[1] do io.write('foo ') end
-      io.write('\n')
-      ]]--
-    end
-  end
-end
-
-function query_sentences()
-  line = qs_input()
-  state_query = {data=select(2, unpack(line))}
-  predict_num = line[1]
-  reset_state(state_query)
-  g_disable_dropout(model.rnns)
-  local len = state_query.data:size(1)
-  local pred = torch.ones(params.vocab_size)
-  g_replace_table(model.s[0], model.start_s)
-  for i = 1, (len - 1) do
-    local x = state_query.data[i]
-    local y = state_query.data[i + 1]
-    local s = model.s[i - 1]
-    _, pred, model.s[1] = unpack(model.rnns[1]:forward({x, y, model.s[0]}))
-    g_replace_table(model.s[0], model.s[1])
-  end
-  local prev = state_query.data[len]
-  local sentence = {}
-  for i = len, (len + predict_num) do
-    local s = model.s[i - 1]
-    sentence[i - len] = prev
-    _, pred, model.s[1] = unpack(model.rnns[1]:forward({prev, pred, model.s[0]}))
-    prev = argmax(pred)
-  end
-  print("Thanks, I will print foo " .. line[1] .. " more times")
-  for i = 1, sentence:size() do io.write(inv_vocab_map[sentence[i]], ' ') end
-  io.write('\n')
-  g_enable_dropout(model.rnns)
-end
-
-
 --function main()
-g_init_gpu(arg)
+--g_init_gpu(arg)
 state_train = {data=transfer_data(ptb.traindataset(params.batch_size))}
 state_valid =  {data=transfer_data(ptb.validdataset(params.batch_size))}
 state_test =  {data=transfer_data(ptb.testdataset(params.batch_size))}
@@ -357,13 +267,10 @@ while epoch < params.max_max_epoch do
    end
  end
  if step % 33 == 0 then
-   cutorch.synchronize()
+   --cutorch.synchronize()
    collectgarbage()
  end
- --torch.save("lstm_model", model)
 end
 run_test()
-torch.save("lstm_model", model)
 print("Training is over.")
-query_sentences()
 --end
