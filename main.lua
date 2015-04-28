@@ -310,6 +310,8 @@ end
 function eval_input()
   while true do
     local ok, line = pcall(readline)
+    print(ok)
+    print(line)
     if not ok then
       if line.code == "EOF" then
         break -- end loop
