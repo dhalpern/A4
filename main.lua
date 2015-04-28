@@ -322,7 +322,6 @@ function query_sentences()
   state_query = {data=transfer_data(words)}
   reset_state(state_query)
   g_disable_dropout(model.rnns)
-  print(state_query)
   local pred = torch.ones(params.vocab_size)
   g_replace_table(model.s[0], model.start_s)
   for i = 1, (len - 1) do
@@ -333,12 +332,10 @@ function query_sentences()
     g_replace_table(model.s[0], model.s[1])
   end
   x = state_query.data[len]
-  print(x)
   y = x
   sentence = {}
   for i = len, (len + predict_num) do
     local s = model.s[i - 1]
-    print(type(x))
     if i > len then
       x = transfer_data(torch.Tensor(params.batch_size):fill(x))
       y = x
@@ -346,6 +343,7 @@ function query_sentences()
     _, pred, model.s[1] = unpack(model.rnns[1]:forward({x, y, model.s[0]}))
     x = argmax(pred[2])
     sentence[i + 1 - len] = x
+    g_replace_table(model.s[0], model.s[1])
   end
   print("Here ya go:")
   for i = 1, table.getn(sentence) do io.write(ptb.inv_vocab_map[sentence[i]], ' ') end
@@ -356,13 +354,21 @@ end
 function evaluate()
   print("OK GO")
   io.flush()
+  g_disable_dropout(model.rnns)
+  g_replace_table(model.s[0], model.start_s)
   while true do
     local ok, inp = pcall(readline)
-    char = ptb.vocab_map[inp]
-    
-
-
+    local x = transfer_data(torch.Tensor(params.batch_size):fill(ptb.vocab_map[inp]))
+    local y = char
+    _, pred, model.s[1] = unpack(model.rnns[1]:forward({x, y, model.s[0]}))
+    g_replace_table(model.s[0], model.s[1])
+    out = pred[2]
+    for i = 1, table.getn(out) do io.write(ptb.inv_vocab_map[out[i]], ' ') end
+    io.write('\n')
+  end
+  g_enable_dropout(model.rnns)
 end
+
 --function main()
 g_init_gpu({1})
 state_train = {data=transfer_data(ptb.traindataset(params.batch_size))}
@@ -428,7 +434,6 @@ if opt.mode == "train" then
      cutorch.synchronize()
      collectgarbage()
    end
-   --[[
    if opt.level == "char" then
       torch.save("char_model", model)
       torch.save("char_vocab_map", ptb.vocab_map)
@@ -438,7 +443,6 @@ if opt.mode == "train" then
       torch.save("lstm_vocab_map", ptb.vocab_map)
       torch.save("lstm_inv_vocab_map", ptb.inv_vocab_map)
    end
-   ]]--
   end
   run_test()
   print("Training is over.")
@@ -448,5 +452,11 @@ if opt.mode == "query" then
   ptb.vocab_map = torch.load("./lstm_vocab_map")
   model = torch.load("./lstm_model")
   query_sentences()
+end
+if opt.mode == "evaluate" then
+  ptb.inv_vocab_map = torch.load("./char_inv_vocab_map")
+  ptb.vocab_map = torch.load("./char_vocab_map")
+  model = torch.load("./char_model")
+  evaluate()
 end
 --end
