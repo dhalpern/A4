@@ -374,7 +374,7 @@ function evaluate()
     _, pred, model.s[1] = unpack(model.rnns[1]:forward({x, y, model.s[0]}))
     g_replace_table(model.s[0], model.s[1])
     out = pred[2]
-    for i = 1, out:size(1) do io.write(ptb.inv_vocab_map[out[i]], ' ') end
+    for i = 1, out:size(1) do io.write(out[i], ' ') end
     io.write('\n')
   end
   g_enable_dropout(model.rnns)
