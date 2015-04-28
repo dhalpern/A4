@@ -146,7 +146,7 @@ end
 function setup()
   print("Creating a RNN LSTM network.")
   if opt.mode == "training" or opt.mode == "evaluate" then
-    core_network = cn
+    local core_network = cn
   else
     local core_network = create_network()
   end
@@ -463,7 +463,7 @@ end
 if opt.mode == "query" then
   ptb.inv_vocab_map = torch.load("./lstm_inv_vocab_map")
   ptb.vocab_map = torch.load("./lstm_vocab_map")
-  cn = torch.load("./lstm_model")
+  cn = torch.load("./cn_word")
   setup()
   query_sentences()
 end
