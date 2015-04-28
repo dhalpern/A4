@@ -452,7 +452,9 @@ if opt.mode == "train" then
      collectgarbage()
    end
   end
-  run_test()
+  if opt.level == "train" then 
+    run_test()
+  end
   print("Training is over.")
 end
 if opt.mode == "query" then
