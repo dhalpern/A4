@@ -145,10 +145,10 @@ end
 
 function setup()
   print("Creating a RNN LSTM network.")
-  if opt.mode == "training" or opt.mode == "evaluate" then
-    local core_network = cn
+  if opt.mode == "query" or opt.mode == "evaluate" then
+    core_network = cn
   else
-    local core_network = create_network()
+    core_network = create_network()
   end
   paramx, paramdx = core_network:getParameters()
   model.s = {}
