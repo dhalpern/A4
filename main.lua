@@ -294,7 +294,27 @@ function qs_input()
       if line.code == "EOF" then
         break -- end loop
       elseif line.code == "vocab" then
-        print("Word not in vocabulary, only 'foo' is in vocabulary: ", line.word)
+        print("Word not in vocabulary: ", line.word)
+      elseif line.code == "init" then
+        print("Start with a number")
+      else
+        print(line)
+        print("Failed, try again")
+      end
+    else
+      return line
+    end
+  end
+end
+
+function eval_input()
+  while true do
+    local ok, line = pcall(readline)
+    if not ok then
+      if line.code == "EOF" then
+        break -- end loop
+      elseif line.code == "vocab" then
+        print("Not a charachter: ", line.word)
       elseif line.code == "init" then
         print("Start with a number")
       else
@@ -355,7 +375,7 @@ function evaluate()
   g_disable_dropout(model.rnns)
   g_replace_table(model.s[0], model.start_s)
   while true do
-    local ok, inp = pcall(readline)
+    local inp = eval_input()
     print(inp)
     print(ptb.vocab_map[inp], type(ptb.vocab_map[inp]))
     local x = transfer_data(torch.Tensor(params.batch_size):fill(ptb.vocab_map[inp]))
