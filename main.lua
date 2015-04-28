@@ -274,6 +274,7 @@ function readline()
   else
     if ptb.vocab_map[line == nil] then error({code="vocab", word = line}) end
     return line
+  end
 end
 
 --Taken from https://github.com/rlowrance/re/blob/master/argmax.lua
