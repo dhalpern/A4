@@ -5,6 +5,18 @@
 ----  This source code is licensed under the Apache 2 license found in the
 ----  LICENSE file in the root directory of this source tree. 
 ----
+if not opt then
+  cmd = torch.CmdLine()
+  cmd:text()
+  cmd:text('LSTM Model')
+  cmd:text()
+  cmd:text('Options:')
+  cmd:option('-mode','train','mode: train | evaluate | query')
+  cmd:option('-level', 'char', 'word | char')
+  cmd:text()
+  opt = cmd:parse(arg or {})
+end
+
 ok,cunn = pcall(require, 'fbcunn')
 if not ok then
     ok,cunn = pcall(require,'cunn')
@@ -328,7 +340,8 @@ end
 
 
 --function main()
-g_init_gpu(arg)
+cutorch.setDevice(1)
+g_make_deterministic(1)
 state_train = {data=transfer_data(ptb.traindataset(params.batch_size))}
 state_valid =  {data=transfer_data(ptb.validdataset(params.batch_size))}
 state_test =  {data=transfer_data(ptb.testdataset(params.batch_size))}
