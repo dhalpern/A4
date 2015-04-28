@@ -272,7 +272,7 @@ function readline()
     end
     return line
   else
-    if ptb.vocab_map[line == nil then error({code="vocab", word = line}) end
+    if ptb.vocab_map[line == nil] then error({code="vocab", word = line}) end
     return line
 end
 
