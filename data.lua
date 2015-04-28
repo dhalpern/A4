@@ -67,7 +67,7 @@ local function testdataset(batch_size)
 end
 
 local function validdataset(batch_size, char)
-   if char then validfn = ptb_path .. "ptb.char.valid.txt"
+   if char then validfn = ptb_path .. "ptb.char.valid.txt" end
    local x = load_data(validfn)
    x = replicate(x, batch_size)
    return x
