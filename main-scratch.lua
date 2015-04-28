@@ -39,6 +39,9 @@ require('nn')
 require('nngraph')
 require('base')
 ptb = require('data')
+if opt.level == 'char' then
+  ptb = require('data_char')
+end
 
 -- Train 1 day and gives 82 perplexity.
 --[[
@@ -69,7 +72,20 @@ local params = {batch_size=20,
                 max_epoch=4,
                 max_max_epoch=13,
                 max_grad_norm=5}
-
+if opt.level == 'char' then
+    params = {batch_size=20,
+                seq_length=50,
+                layers=2,
+                decay=2,
+                rnn_size=200,
+                dropout=0,
+                init_weight=0.1,
+                lr=1,
+                vocab_size=50,
+                max_epoch=4,
+                max_max_epoch=13,
+                max_grad_norm=5}
+end
 function transfer_data(x)
   --return x
   return x:cuda()
