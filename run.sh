@@ -1,2 +1,2 @@
 #!/bin/bash
-luajit main.lua -mode evaluate -level char
+~/torch/install/bin/th main.lua -mode evaluate -level char
