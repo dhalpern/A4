@@ -232,7 +232,11 @@ function run_valid()
   for i = 1, len do
     perp = perp + fp(state_valid)
   end
-  print("Validation set perplexity : " .. g_f3(torch.exp(perp / len)))
+  if opt.level == 'char' then
+    print("Validation set perplexity : " .. g_f3(torch.exp((5.6 * perp) / len)))
+  else
+    print("Validation set perplexity : " .. g_f3(torch.exp(perp / len)))
+  end
   g_enable_dropout(model.rnns)
 end
 
