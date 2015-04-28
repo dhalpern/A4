@@ -331,6 +331,7 @@ function query_sentences()
     --print(pred[2])
     x = argmax(pred[2])
     sentence[i + 1 - len] = x
+    g_replace_table(model.s[0], model.s[1])
   end
   print("Here ya go:")
   for i = 1, table.getn(sentence) do io.write(ptb.inv_vocab_map[sentence[i]], ' ') end
@@ -338,6 +339,23 @@ function query_sentences()
   g_enable_dropout(model.rnns)
 end
 
+function evaluate()
+  print("OK GO")
+  io.flush()
+  g_disable_dropout(model.rnns)
+  g_replace_table(model.s[0], model.start_s)
+  while true do
+    local ok, inp = pcall(readline)
+    local x = transfer_data(torch.Tensor(params.batch_size):fill(ptb.vocab_map[inp]))
+    local y = char
+    _, pred, model.s[1] = unpack(model.rnns[1]:forward({x, y, model.s[0]}))
+    g_replace_table(model.s[0], model.s[1])
+    out = pred[2]
+    for i = 1, table.getn(out) do io.write(ptb.inv_vocab_map[out[i]], ' ') end
+    io.write('\n')
+  end
+  g_enable_dropout(model.rnns)
+end
 
 --function main()
 cutorch.setDevice(1)
@@ -399,10 +417,16 @@ torch.save("lstm_vocab_map", ptb.vocab_map)
 torch.save("lstm_inv_vocab_map", ptb.inv_vocab_map)
 print("Training is over.")
 
-ptb.inv_vocab_map = torch.load("./lstm_inv_vocab_map")
-ptb.vocab_map = torch.load("./lstm_vocab_map")
-model = torch.load("./lstm_model")
---state_test =  {data=transfer_data(ptb.testdataset(params.batch_size))}
---run_test()
-query_sentences()
+if opt.mode == "query" then
+  ptb.inv_vocab_map = torch.load("./lstm_inv_vocab_map")
+  ptb.vocab_map = torch.load("./lstm_vocab_map")
+  model = torch.load("./lstm_model")
+  query_sentences()
+end
+if opt.mode == "evaluate" then
+  ptb.inv_vocab_map = torch.load("./char_inv_vocab_map")
+  ptb.vocab_map = torch.load("./char_vocab_map")
+  model = torch.load("./char_model")
+  evaluate()
+end
 --end
