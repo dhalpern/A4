@@ -382,10 +382,14 @@ cutorch.setDevice(1)
 g_make_deterministic(1)
 state_train = {data=transfer_data(ptb.traindataset(params.batch_size))}
 state_valid =  {data=transfer_data(ptb.validdataset(params.batch_size))}
-state_test =  {data=transfer_data(ptb.testdataset(params.batch_size))}
+if opt.level == "char" then
+  states = {state_train, state_valid}
+else
+  state_test =  {data=transfer_data(ptb.testdataset(params.batch_size))}
+  states = {state_train, state_valid, state_test}
+end
 print("Network parameters:")
 print(params)
-local states = {state_train, state_valid, state_test}
 for _, state in pairs(states) do
  reset_state(state)
 end
