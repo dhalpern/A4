@@ -355,7 +355,7 @@ function query_sentences()
 end
 
 function evaluate()
-  print("OK GO")
+  io.write("OK GO")
   io.flush()
   g_disable_dropout(model.rnns)
   g_replace_table(model.s[0], model.start_s)
@@ -367,7 +367,6 @@ function evaluate()
     g_replace_table(model.s[0], model.s[1])
     out = pred[2]
     for i = 1, out:size(1) do io.write(out[i], ' ') end
-    io.write('\n')
   end
   g_enable_dropout(model.rnns)
 end
