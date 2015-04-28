@@ -443,11 +443,11 @@ if opt.mode == "train" then
          params.lr = params.lr / params.decay
      end
      if opt.level == "char" then
-        torch.save("char_model", model)
+        torch.save("cn_char", model.core_network)
         torch.save("char_vocab_map", ptb.vocab_map)
         torch.save("char_inv_vocab_map", ptb.inv_vocab_map)
      else
-        torch.save("lstm_model", model)
+        torch.save("cn_word", model.core_network)
         torch.save("lstm_vocab_map", ptb.vocab_map)
         torch.save("lstm_inv_vocab_map", ptb.inv_vocab_map)
      end
@@ -470,7 +470,7 @@ end
 if opt.mode == "evaluate" then
   ptb.inv_vocab_map = torch.load("./char_inv_vocab_map")
   ptb.vocab_map = torch.load("./char_vocab_map")
-  cn = torch.load("./char_model")
+  cn = torch.load("./cn_char")
   setup()
   evaluate()
 end
