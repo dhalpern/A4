@@ -428,10 +428,6 @@ if opt.mode == "train" then
      if epoch > params.max_epoch then
          params.lr = params.lr / params.decay
      end
-   end
-   if step % 33 == 0 then
-     cutorch.synchronize()
-     collectgarbage()
      if opt.level == "char" then
         torch.save("char_model", model)
         torch.save("char_vocab_map", ptb.vocab_map)
@@ -441,7 +437,11 @@ if opt.mode == "train" then
         torch.save("lstm_vocab_map", ptb.vocab_map)
         torch.save("lstm_inv_vocab_map", ptb.inv_vocab_map)
      end
-    end
+   end
+   if step % 33 == 0 then
+     cutorch.synchronize()
+     collectgarbage()
+   end
   end
   run_test()
   print("Training is over.")
