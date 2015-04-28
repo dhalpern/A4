@@ -32,6 +32,7 @@ else
     cudaComputeCapability = deviceParams.major + deviceParams.minor/10
     LookupTable = nn.LookupTable
 end
+local cn = {}
 stringx = require('pl.stringx')
 require('io')
 require('nn')
@@ -144,7 +145,11 @@ end
 
 function setup()
   print("Creating a RNN LSTM network.")
-  local core_network = create_network()
+  if opt.mode == "training" or opt.mode == "evaluate" then
+    core_network = cn
+  else
+    local core_network = create_network()
+  end
   paramx, paramdx = core_network:getParameters()
   model.s = {}
   model.ds = {}
@@ -458,13 +463,15 @@ end
 if opt.mode == "query" then
   ptb.inv_vocab_map = torch.load("./lstm_inv_vocab_map")
   ptb.vocab_map = torch.load("./lstm_vocab_map")
-  model = torch.load("./lstm_model")
+  cn = torch.load("./lstm_model")
+  setup()
   query_sentences()
 end
 if opt.mode == "evaluate" then
   ptb.inv_vocab_map = torch.load("./char_inv_vocab_map")
   ptb.vocab_map = torch.load("./char_vocab_map")
-  model = torch.load("./char_model")
+  cn = torch.load("./char_model")
+  setup()
   evaluate()
 end
 --end
