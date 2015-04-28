@@ -443,11 +443,11 @@ if opt.mode == "train" then
          params.lr = params.lr / params.decay
      end
      if opt.level == "char" then
-        torch.save("cn_char", model.core_network)
+        torch.save("char_model", model)
         torch.save("char_vocab_map", ptb.vocab_map)
         torch.save("char_inv_vocab_map", ptb.inv_vocab_map)
      else
-        torch.save("cn_word", model.core_network)
+        torch.save("lstm_model", model)
         torch.save("lstm_vocab_map", ptb.vocab_map)
         torch.save("lstm_inv_vocab_map", ptb.inv_vocab_map)
      end
