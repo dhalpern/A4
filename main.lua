@@ -208,11 +208,9 @@ function bp(state)
     state.pos = state.pos - 1
     local x = state.data[state.pos]
     local y = state.data[state.pos + 1]
-    --print(y)
     local s = model.s[i - 1]
     local derr = transfer_data(torch.ones(1))
     local dpred = transfer_data(torch.zeros(params.batch_size, params.vocab_size))
-    --local dpred_y = transfer_data(torch.zeros())
     local tmp = model.rnns[i]:backward({x, y, s},
                                        {derr, dpred, model.ds})[3] 
     g_replace_table(model.ds, tmp)
@@ -370,7 +368,8 @@ function evaluate()
 end
 
 --function main()
-g_init_gpu({1})
+cutorch.setDevice(1)
+g_make_deterministic(1)
 state_train = {data=transfer_data(ptb.traindataset(params.batch_size))}
 state_valid =  {data=transfer_data(ptb.validdataset(params.batch_size))}
 if opt.level == "char" then
