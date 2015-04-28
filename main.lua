@@ -366,7 +366,7 @@ function evaluate()
   g_disable_dropout(model.rnns)
   g_replace_table(model.s[0], model.start_s)
   while true do
-    local inp = input()
+    local inp = input()[1]
     print(inp)
     print(ptb.vocab_map[inp], type(ptb.vocab_map[inp]))
     local x = transfer_data(torch.Tensor(params.batch_size):fill(ptb.vocab_map[inp]))
