@@ -14,10 +14,6 @@ local ptb_path = "./data/"
 local trainfn = ptb_path .. "ptb.train.txt"
 local testfn  = ptb_path .. "ptb.test.txt"
 local validfn = ptb_path .. "ptb.valid.txt"
---[[
-local trainfn = ptb_path .. "ptb.char.train.txt"
-local validfn = ptb_path .. "ptb.char.valid.txt"
---]]
 
 local vocab_idx = 0
 local vocab_map = {}
@@ -54,6 +50,7 @@ local function load_data(fname)
 end
 
 local function traindataset(batch_size, char)
+   if char then trainfn = ptb_path .. "ptb.char.train.txt" end
    local x = load_data(trainfn)
    x = replicate(x, batch_size)
    return x
@@ -69,7 +66,8 @@ local function testdataset(batch_size)
    end
 end
 
-local function validdataset(batch_size)
+local function validdataset(batch_size, char)
+   if char then validfn = ptb_path .. "ptb.char.valid.txt"
    local x = load_data(validfn)
    x = replicate(x, batch_size)
    return x
