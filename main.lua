@@ -249,9 +249,7 @@ function run_test()
   g_replace_table(model.s[0], model.start_s)
   for i = 1, (len - 1) do
     local x = state_test.data[i]
-    print("test x", x)
     local y = state_test.data[i + 1]
-    print("test y", y)
     local s = model.s[i - 1]
     perp_tmp, _, model.s[1] = unpack(model.rnns[1]:forward({x, y, model.s[0]}))
     perp = perp + perp_tmp[1]
@@ -321,7 +319,6 @@ end
 function query_sentences()
   line = input()
   predict_num = table.remove(line, 1)
-  print(predict_num)
   local len = table.getn(line)
   words = torch.Tensor(len)
   for j = 1, len do
@@ -367,8 +364,6 @@ function evaluate()
   g_replace_table(model.s[0], model.start_s)
   while true do
     local inp = input()[1]
-    print(inp)
-    print(ptb.vocab_map[inp], type(ptb.vocab_map[inp]))
     local x = transfer_data(torch.Tensor(params.batch_size):fill(ptb.vocab_map[inp]))
     local y = x
     _, pred, model.s[1] = unpack(model.rnns[1]:forward({x, y, model.s[0]}))
