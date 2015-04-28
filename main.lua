@@ -265,11 +265,15 @@ function readline()
   local line = io.read("*line")
   if line == nil then error({code="EOF"}) end
   line = stringx.split(line)
-  if tonumber(line[1]) == nil then error({code="init"}) end
-  for i = 2,#line do
-    if ptb.vocab_map[line[i]] == nil then error({code="vocab", word = line[i]}) end
-  end
-  return line
+  if opt.level == "word" then
+    if tonumber(line[1]) == nil then error({code="init"}) end
+    for i = 2,#line do
+      if ptb.vocab_map[line[i]] == nil then error({code="vocab", word = line[i]}) end
+    end
+    return line
+  else
+    if ptb.vocab_map[line == nil then error({code="vocab", word = line}) end
+    return line
 end
 
 --Taken from https://github.com/rlowrance/re/blob/master/argmax.lua
@@ -286,37 +290,21 @@ local function argmax(v)
    end
 end
 
-function qs_input()
+function input()
   while true do
-    print("Query: len word1 word2 etc")
-    local ok, line = pcall(readline)
-    if not ok then
-      if line.code == "EOF" then
-        break -- end loop
-      elseif line.code == "vocab" then
-        print("Word not in vocabulary: ", line.word)
-      elseif line.code == "init" then
-        print("Start with a number")
-      else
-        print(line)
-        print("Failed, try again")
-      end
-    else
-      return line
+    if opt.level == "word" then
+      print("Query: len word1 word2 etc")
     end
-  end
-end
-
-function eval_input()
-  while true do
     local ok, line = pcall(readline)
-    print(ok)
-    print(line)
     if not ok then
       if line.code == "EOF" then
         break -- end loop
       elseif line.code == "vocab" then
-        print("Not a charachter: ", line.word)
+        if opt.level == "word" then
+          print("Word not in vocabulary: ", line.word)
+        else
+          print("Not a charachter: ", line.word)
+        end
       elseif line.code == "init" then
         print("Start with a number")
       else
@@ -330,7 +318,7 @@ function eval_input()
 end
 
 function query_sentences()
-  line = qs_input()
+  line = input()
   predict_num = table.remove(line, 1)
   print(predict_num)
   local len = table.getn(line)
@@ -377,7 +365,7 @@ function evaluate()
   g_disable_dropout(model.rnns)
   g_replace_table(model.s[0], model.start_s)
   while true do
-    local inp = eval_input()
+    local inp = input()
     print(inp)
     print(ptb.vocab_map[inp], type(ptb.vocab_map[inp]))
     local x = transfer_data(torch.Tensor(params.batch_size):fill(ptb.vocab_map[inp]))
