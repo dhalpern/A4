@@ -370,7 +370,7 @@ function evaluate()
     print(inp)
     print(ptb.vocab_map[inp], type(ptb.vocab_map[inp]))
     local x = transfer_data(torch.Tensor(params.batch_size):fill(ptb.vocab_map[inp]))
-    local y = char
+    local y = x
     _, pred, model.s[1] = unpack(model.rnns[1]:forward({x, y, model.s[0]}))
     g_replace_table(model.s[0], model.s[1])
     out = pred[2]
