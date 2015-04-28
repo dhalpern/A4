@@ -14,6 +14,9 @@ for c in traintxt:
 lua_map = dict(tup.split() for tup in subprocess.check_output(['luajit','a4_vocab.lua']).split("\n") if tup)
 print lua_map
 for c,ix in vocab_map.iteritems():
+    print c
+    print ix
+    print luamap[c]
     assert ix == int(lua_map[c]) - 1
 
 evaltxt = open('data/ptb.char.valid.txt').read()
