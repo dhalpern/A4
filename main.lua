@@ -356,6 +356,7 @@ function evaluate()
   g_replace_table(model.s[0], model.start_s)
   while true do
     local ok, inp = pcall(readline)
+    print(inp)
     print(ptb.vocab_map[inp], type(ptb.vocab_map[inp]))
     local x = transfer_data(torch.Tensor(params.batch_size):fill(ptb.vocab_map[inp]))
     local y = char
