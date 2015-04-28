@@ -423,7 +423,6 @@ if opt.mode == "train" then
      cutorch.synchronize()
      collectgarbage()
    end
-   --[[
    if opt.level == "char" then
       torch.save("char_model", model)
       torch.save("char_vocab_map", ptb.vocab_map)
@@ -433,7 +432,6 @@ if opt.mode == "train" then
       torch.save("lstm_vocab_map", ptb.vocab_map)
       torch.save("lstm_inv_vocab_map", ptb.inv_vocab_map)
    end
-   ]]--
   end
   run_test()
   print("Training is over.")
